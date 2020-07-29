@@ -46,11 +46,11 @@ func (c *Client) SendMessage(from string, to string, subject string, text string
 	)
 
 	m.SetDKIM(true)
-	m.SetTrackingOpens(true)
-	m.SetTrackingClicks(true)
 
 	if html != "" {
 		m.SetHtml(html)
+		m.SetTrackingOpens(true)
+		m.SetTrackingClicks(true)
 	}
 
 	for _, f := range attachments {
