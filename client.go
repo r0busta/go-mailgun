@@ -32,8 +32,8 @@ func NewDefaultClient() (*Client, error) {
 	return c, nil
 }
 
-// SendMessage sends a simple message with attachments
-func (c *Client) SendMessage(from string, to string, subject string, text string, html string, attachments ...string) (string, error) {
+// SendMessage a convenient function to send a simple message with attachments
+func (c *Client) SendMessage(from string, to string, subject string, text string, html string, attachments ...string, inlineAttachments ...string) (string, error) {
 	if text == "" && html == "" {
 		return "", fmt.Errorf("empty text and html mail body")
 	}
@@ -53,8 +53,12 @@ func (c *Client) SendMessage(from string, to string, subject string, text string
 		m.SetTrackingClicks(true)
 	}
 
-	for _, f := range attachments {
-		m.AddAttachment(f)
+	for _, a := range attachments {
+		m.AddAttachment(a)
+	}
+
+	for _, a := range inlineAttachments {
+		m.AddInline(a)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
