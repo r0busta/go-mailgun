@@ -33,7 +33,7 @@ func NewDefaultClient() (*Client, error) {
 }
 
 // SendMessage a convenient function to send a simple message with attachments
-func (c *Client) SendMessage(from string, to string, subject string, text string, html string, attachments ...string, inlineAttachments ...string) (string, error) {
+func (c *Client) SendMessage(from string, to string, subject string, text string, html string, attachments []string, inlineAttachments []string) (string, error) {
 	if text == "" && html == "" {
 		return "", fmt.Errorf("empty text and html mail body")
 	}
