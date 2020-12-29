@@ -1,2 +1,3 @@
 # go-mailgun
-A simple go Mailgun client
+
+A simple Mailgun client

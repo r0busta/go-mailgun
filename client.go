@@ -6,8 +6,27 @@ import (
 	"os"
 	"time"
 
-	"github.com/mailgun/mailgun-go/v3"
+	"github.com/r0busta/mailgun-go/v4"
 )
+
+type Message struct {
+	From    string
+	To      string
+	Subject string
+	Text    string
+	HTML    string
+
+	Attachments       []string
+	BufferAttachments []BufferAttachment
+
+	Inlines       []string
+	BufferInlines []BufferAttachment
+}
+
+type BufferAttachment struct {
+	Filename string
+	Buffer   []byte
+}
 
 // Client mail client
 type Client struct {
@@ -33,37 +52,45 @@ func NewDefaultClient() (*Client, error) {
 }
 
 // SendMessage a convenient function to send a simple message with attachments
-func (c *Client) SendMessage(from string, to string, subject string, text string, html string, attachments []string, inlineAttachments []string) (string, error) {
-	if text == "" && html == "" {
+func (c *Client) SendMessage(m *Message) (string, error) {
+	if m.Text == "" && m.HTML == "" {
 		return "", fmt.Errorf("empty text and html mail body")
 	}
 
-	m := c.mg.NewMessage(
-		from,
-		subject,
-		text,
-		to,
+	mgm := c.mg.NewMessage(
+		m.From,
+		m.Subject,
+		m.Text,
+		m.To,
 	)
 
-	m.SetDKIM(true)
+	mgm.SetDKIM(true)
 
-	if html != "" {
-		m.SetHtml(html)
-		m.SetTrackingOpens(true)
-		m.SetTrackingClicks(true)
+	if m.HTML != "" {
+		mgm.SetHtml(m.HTML)
+		mgm.SetTrackingOpens(true)
+		mgm.SetTrackingClicks(true)
 	}
 
-	for _, a := range attachments {
-		m.AddAttachment(a)
+	for _, a := range m.Attachments {
+		mgm.AddAttachment(a)
 	}
 
-	for _, a := range inlineAttachments {
-		m.AddInline(a)
+	for _, a := range m.Inlines {
+		mgm.AddInline(a)
+	}
+
+	for _, a := range m.BufferAttachments {
+		mgm.AddBufferAttachment(a.Filename, a.Buffer)
+	}
+
+	for _, a := range m.BufferInlines {
+		mgm.AddBufferInline(a.Filename, a.Buffer)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
-	_, id, err := c.mg.Send(ctx, m)
+	_, id, err := c.mg.Send(ctx, mgm)
 	return id, err
 }
